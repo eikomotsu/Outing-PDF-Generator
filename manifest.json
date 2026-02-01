@@ -1,7 +1,6 @@
 {
     "name": "Outing Permission System",
     "id": "outing-permission-system",
-    "iarc_rating_id": "",
     "description": "A professional tool for generating official university outing permission PDFs with ease.",
     "categories": [
         "education",
@@ -14,7 +13,6 @@
     "lang": "en-US",
     "dir": "ltr",
     "scope": "./",
-    "scope_extensions": [],
     "start_url": "./index.html",
     "display_override": [
         "tabbed",
@@ -41,23 +39,23 @@
             "purpose": "any maskable"
         },
         {
-            "src": "icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
+            "src": "icon-512.jpg",
+            "sizes": "1024x1024",
+            "type": "image/jpeg",
             "purpose": "any maskable"
         }
     ],
     "screenshots": [
         {
-            "src": "screenshot-desktop.png",
-            "sizes": "1280x720",
-            "type": "image/png",
+            "src": "screenshot-desktop.jpg",
+            "sizes": "1024x1024",
+            "type": "image/jpeg",
             "form_factor": "wide"
         },
         {
-            "src": "screenshot-mobile.png",
-            "sizes": "360x720",
-            "type": "image/png",
+            "src": "screenshot-mobile.jpg",
+            "sizes": "1024x1024",
+            "type": "image/jpeg",
             "form_factor": "narrow"
         }
     ],
@@ -109,9 +107,9 @@
             "template": "widget-template.json",
             "screenshots": [
                 {
-                    "src": "screenshot-mobile.png",
+                    "src": "screenshot-mobile.jpg",
                     "sizes": "360x720",
-                    "type": "image/png"
+                    "type": "image/jpeg"
                 }
             ]
         }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'outing-app-v1';
+const CACHE_NAME = 'outing-app-v2';
 const ASSETS = [
     "./",
     "./index.html",
@@ -7,7 +7,7 @@ const ASSETS = [
     "./data.js",
     "./manifest.json",
     "./icon-192.jpg",
-    "./icon-512.png"
+    "./icon-512.jpg"
 ];
 
 self.addEventListener("install", e => {
@@ -30,7 +30,22 @@ self.addEventListener("activate", e => {
 });
 
 self.addEventListener("fetch", e => {
-    e.respondWith(
-        caches.match(e.request).then(res => res || fetch(e.request))
-    );
+    // Network-First Strategy for Data and Manifest (Always try to get fresh copy)
+    if (e.request.url.includes("data.js") || e.request.url.includes("manifest.json")) {
+        e.respondWith(
+            fetch(e.request)
+                .then(response => {
+                    // Update cache with new version
+                    const clonedResponse = response.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(e.request, clonedResponse));
+                    return response;
+                })
+                .catch(() => caches.match(e.request)) // Fallback to cache if offline
+        );
+    } else {
+        // Cache-First Strategy for Static Assets (Performance)
+        e.respondWith(
+            caches.match(e.request).then(res => res || fetch(e.request))
+        );
+    }
 });
