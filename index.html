@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outing Permission Generator</title>
+
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- PWA Config -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+
+  <style>
+    :root {
+      --primary: #0088ff;
+      /* Indigo */
+      --primary-hover: #4338ca;
+      --bg-gradient: linear-gradient(135deg, #000000 0%, #323132 100%);
+      --surface: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --radius: 12px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* --- Preview Area --- */
+    /* --- Preview Area --- */
+    /* --- Preview Area --- */
+    #preview {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 20mm;
+      box-sizing: border-box;
+      background: white;
+      font-size: 14px;
+      font-family: "Times New Roman", serif;
+      margin: auto;
+      /* Keep it centered */
+    }
+
+    /* Force page breaks */
+    .page-break {
+      break-before: page;
+      page-break-before: always;
+    }
+
+    /* Prevent ugly splits */
+    p,
+    table,
+    tr,
+    td {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    @media print {
+      .page-break {
+        page-break-before: always;
+        break-before: page;
+      }
+    }
+
+    .page {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .page-break {
+      height: 1px;
+    }
+
+    @media screen and (max-width: 1200px) {
+      /* preserved media query structure but can be empty if not needed by new logic */
+    }
+
+    /* Download button wrapper */
+    .download-section {
+      width: 100%;
+      max-width: 210mm;
+      display: none;
+      /* Toggled by script */
+      justify-content: center;
+    }
+
+    @media screen and (max-width: 950px) {
+      .app-layout {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .form-section {
+        flex: auto;
+        width: 100%;
+        max-width: 480px;
+      }
+
+      .form-card {
+        position: static;
+      }
+
+      /* Responsive preview for mobile UX */
+      #preview {
+        width: 100%;
+        min-height: auto;
+        padding: 5%;
+        aspect-ratio: 210/297;
+        height: auto;
+      }
+    }
+
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: var(--text-main);
+      align-items: flex-start;
+      /* Align top */
+    }
+
+    .app-layout {
+      display: flex;
+      flex-direction: column;
+      /* Stack vertically */
+      align-items: center;
+      /* Center horizontally */
+      gap: 40px;
+      width: 100%;
+      max-width: 1000px;
+      /* Limit max width for better readability */
+      padding: 20px;
+    }
+
+    /* Left Column: Form */
+    .form-section {
+      flex: 0 0 auto;
+      width: 100%;
+      max-width: 480px;
+      /* Keep form width compact */
+    }
+
+    /* Keep existing container styles but apply to form-inner */
+    .form-card {
+      background: var(--surface);
+      width: 100%;
+      padding: 2rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.5s ease-out;
+      position: sticky;
+      top: 20px;
+    }
+
+    /* Right Column: Preview */
+    .preview-section {
+      flex: 0 0 auto;
+      /* removed flex: 1 to allow centering */
+      min-width: 0;
+      /* Prevent flex overflow */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* Center horizontally */
+      justify-content: flex-start;
+    }
+
+    .container {
+      background: var(--surface);
+      width: 100%;
+      max-width: 480px;
+      padding: 2.5rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    /* --- Header Section --- */
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .header i {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: inline-block;
+      background: #e0e7ff;
+      padding: 12px;
+      border-radius: 50%;
+    }
+
+    /* --- Form Elements --- */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    /* Wrapper for Input Icons */
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    select,
+    input[type="date"] {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      /* Space for icon */
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background-color: #f9fafb;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+      font-family: inherit;
+      appearance: none;
+    }
+
+    /* Custom arrow for selects */
+    .select-wrapper .input-wrapper::after {
+      content: '\f107';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    select:focus,
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    /* --- Smart Date Section --- */
+    .trip-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .section-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .date-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+
+    .date-card:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .date-inputs {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .date-field {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sub-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .date-field input {
+      border: none;
+      background: transparent;
+      padding: 5px 0;
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .date-field input:focus {
+      box-shadow: none;
+      outline: none;
+    }
+
+    .duration-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      min-width: 60px;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      background: #e0e7ff;
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      margin-top: 4px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .badge.visible {
+      opacity: 1;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .chip {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      width: auto;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      background: #f3f4f6;
+      border-color: var(--text-muted);
+      color: var(--text-main);
+    }
+
+    /* --- Buttons --- */
+    button.primary-btn,
+    button#downloadBtn {
+      width: 100%;
+      padding: 0.875rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background-color: var(--primary);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    button.primary-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    #downloadBtn {
+      background-color: #10b981;
+      /* Green */
+      margin-top: 1rem;
+    }
+
+    #downloadBtn:hover {
+      background-color: #059669;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* --- Modal Styles --- */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-card {
+      background: var(--surface);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      /* Allow scrolling if tall */
+      overflow-y: auto;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--text-main);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .close-btn:hover {
+      color: var(--text-main);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .full-width {
+      grid-column: span 2;
+    }
+
+    .section-title {
+      grid-column: span 2;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 10px;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full-width {
+        grid-column: span 1;
+      }
+    }
+
+    .pin-input {
+      width: 100%;
+      height: 45px;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #f9fafb;
+      transition: all 0.2s;
+    }
+
+    .pin-input:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      outline: none;
+    }
+
+    .pin-input.success {
+      border-color: #10b981;
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    /* --- Final Professional Admin Styles (Light Theme) --- */
+    .admin-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      /* Deep Dark Backdrop */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+
+    .admin-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .admin-card {
+      width: 440px;
+      max-width: 90%;
+      background: #ffffff;
+      /* Light Card */
+      border-radius: 16px;
+      padding: 40px 36px;
+      color: #1e293b;
+      /* Dark Text */
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      position: relative;
+    }
+
+    .admin-overlay.active .admin-card {
+      transform: translateY(0);
+    }
+
+    .admin-icon {
+      font-size: 42px;
+      margin-bottom: 12px;
+      background: #f1f5f9;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .admin-card h2 {
+      margin: 0;
+      font-size: 22px;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin: 8px 0 32px;
+      line-height: 1.5;
+    }
+
+    .field-group {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .field-group label {
+      font-size: 13px;
+      color: #475569;
+      margin-bottom: 8px;
+      display: block;
+      font-weight: 500;
+    }
+
+    .otp-inputs {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+    }
+
+    .otp-box {
+      width: 50px;
+      height: 58px;
+      background: #f8fafc;
+      /* Light Input */
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      color: #0f172a;
+      font-size: 24px;
+      text-align: center;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .otp-box:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 14px;
+      background: #f8fafc;
+      /* Light Input */
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      color: #0f172a;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .text-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .security-question {
+      background: #f0f9ff;
+      border-left: 4px solid #0ea5e9;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: #0369a1;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .primary-btn {
+      width: 100%;
+      padding: 16px;
+      background: #2563eb;
+      border: none;
+      border-radius: 10px;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    }
+
+    .primary-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .primary-btn:active {
+      transform: translateY(0);
+    }
+
+
+    .secondary-btn {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 13px;
+      margin-top: 12px;
+      cursor: pointer;
+    }
+
+    .error-box {
+      display: none;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid #ef4444;
+      color: #ef4444;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      10%,
+      30%,
+      50%,
+      70%,
+      90% {
+        transform: translateX(-4px);
+      }
+
+      20%,
+      40%,
+      60%,
+      80% {
+        transform: translateX(4px);
+      }
+    }
+
+    .shake {
+      animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+    }
+
+    /* --- Pro Dashboard Styles v2 --- */
+    .dashboard-card {
+      background: #f8fafc;
+      /* Light Gray Background */
+      width: 100%;
+      max-width: 1000px;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+      box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.4);
+      animation: slideUp 0.4s ease-out;
+      border: 1px solid #e2e8f0;
+    }
+
+    .dashboard-header {
+      background: #ffffff;
+      color: #000000;
+      padding: 18px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-icon {
+      font-size: 1.6rem;
+      color: #2563eb;
+      background: #eff6ff;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+    }
+
+    .brand h3 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #000000;
+    }
+
+    .brand p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .logout-btn {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      padding: 9px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logout-btn:hover {
+      background: #f1f5f9;
+      color: #ef4444;
+      border-color: #fee2e2;
+    }
+
+    .close-dashboard {
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      color: #94a3b8;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 8px;
+    }
+
+    .close-dashboard:hover {
+      color: #64748b;
+    }
+
+    /* Stats Row */
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      padding: 30px 32px 10px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      padding: 24px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+
+    .stat-icon.blue {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .stat-icon.green {
+      background: #f0fdf4;
+      color: #16a34a;
+    }
+
+    .stat-info h4 {
+      margin: 0;
+      font-size: 1.6rem;
+      color: #000000;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Toolbar */
+    .dashboard-toolbar {
+      padding: 24px 32px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #000000;
+      font-weight: 600;
+    }
+
+    /* Table */
+    .table-container {
+      padding: 0 32px 32px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .admin-table th {
+      text-align: left;
+      padding: 16px 20px;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #e2e8f0;
+      position: sticky;
+      top: 0;
+    }
+
+    .admin-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #000000;
+      font-size: 0.95rem;
+    }
+
+    .admin-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .admin-table tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .action-btn {
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .action-btn.primary {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+    }
+
+    .action-btn.primary:hover {
+      background: #1d4ed8;
+    }
+
+    .action-btn.success {
+      background: #059669;
+      color: white;
+    }
+
+    /* Footer */
+    .dashboard-footer {
+      padding: 16px 32px;
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .text-danger-btn {
+      color: #ef4444;
+      background: none;
+      border: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .text-danger-btn:hover {
+      background: #fef2f2;
+    }
+
+    /* Table Helpers */
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: 'Segoe UI Mono', monospace;
+    }
+
+    .badge.gray {
+      background: #e2e8f0;
+      color: #000000;
+      border: 1px solid #cbd5e1;
+      font-weight: 700;
+      opacity: 1;
+      /* Explicit visibility */
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .icon-btn.edit {
+      color: #3b82f6;
+      border-color: #dbeafe;
+      background: #eff6ff;
+    }
+
+    .icon-btn.edit:hover {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    .icon-btn.delete {
+      color: #ef4444;
+      border-color: #fee2e2;
+      background: #fef2f2;
+    }
+
+    .icon-btn.delete:hover {
+      background: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+
+    .student-id-box,
+    .student-pin-box {
+      width: 48px;
+      height: 54px;
+      background: #f8fafc;
+      /* Adapted to Light Theme */
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      color: #000000;
+      font-size: 18px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .student-id-box:focus,
+    .student-pin-box:focus {
+      outline: none;
+      border-color: #2563eb;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* --- Pro Modal Styles --- */
+    .pro-modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 700px;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+      box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.4);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .modal-header {
+      background: #ffffff;
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #0f172a;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .modal-body {
+      padding: 0;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .form-section {
+      padding: 24px 32px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .form-section:last-child {
+      border-bottom: none;
+    }
+
+    .form-section .section-title {
+      font-size: 1rem;
+      color: #334155;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .full-width {
+      grid-column: span 2;
+    }
+
+    .pro-input {
+      width: 100%;
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      color: #0f172a;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .pro-input:focus {
+      background: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
+
+    .url-input-wrapper {
+      display: flex;
+      gap: 10px;
+    }
+
+    .upload-link {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      width: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+
+    .upload-link:hover {
+      color: #3b82f6;
+      border-color: #bfdbfe;
+      background: #eff6ff;
+    }
+
+    .modal-footer {
+      padding: 20px 32px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-layout">
+
+    <!-- Left Column -->
+    <div class="form-section">
+      <div class="form-card">
+        <div class="header" style="position: relative;">
+          <!-- Admin Lock Button -->
+          <button onclick="openAdminAuth()"
+            style="position: absolute; top: -10px; right: -10px; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 10px; transition: color 0.3s;"
+            title="Admin Access">
+            <i class="fa-solid fa-lock"></i>
+          </button>
+
+          <i class="fa-solid fa-file-shield"></i>
+          <h1>Outing Permission</h1>
+          <p>Generate your official pass PDF instantly.</p>
+        </div>
+
+        <div class="box">
+          <div class="form-group select-wrapper">
+            <label>Student Identity</label>
+            <div style="display: flex; gap: 10px;">
+              <div class="input-wrapper" style="flex: 1;">
+                <i class="fa-solid fa-user-graduate"></i>
+                <select id="studentSelect" onchange="handleStudentChange()">
+                  <option value="" disabled selected>Select ID / Name</option>
+                  <!-- Populated by JS -->
+                </select>
+              </div>
+              <button class="primary-btn" onclick="openAddStudentModal()" title="Add New Student"
+                style="width: auto; padding: 0 1rem; margin: 0;">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- PIN Auth Section -->
+          <div id="pin-auth-section" style="margin-bottom: 1.5rem; display: none;">
+            <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+              <i class="fa-solid fa-shield-halved" style="margin-right: 5px;"></i> Enter PIN to Unlock
+            </label>
+            <div class="pin-boxes" style="display: flex; gap: 10px; justify-content: space-between;">
+              <input type="text" maxlength="1" class="pin-input" inputmode="numeric">
+              <input type="text" maxlength="1" class="pin-input" inputmode="numeric">
+              <input type="text" maxlength="1" class="pin-input" inputmode="numeric">
+              <input type="text" maxlength="1" class="pin-input" inputmode="numeric">
+              <input type="text" maxlength="1" class="pin-input" inputmode="numeric">
+            </div>
+            <small id="pin-error" style="color: #ef4444; display: none; margin-top: 5px; font-size: 0.8rem;">
+              <i class="fa-solid fa-circle-exclamation"></i> Incorrect PIN
+            </small>
+            <small id="pin-success" style="color: #10b981; display: none; margin-top: 5px; font-size: 0.8rem;">
+              <i class="fa-solid fa-check-circle"></i> Identity Verified
+            </small>
+          </div>
+
+          <div class="trip-section">
+            <label class="section-label">Trip Duration</label>
+
+            <div class="date-card">
+              <div class="date-inputs">
+                <div class="date-field">
+                  <span class="sub-label">Departing</span>
+                  <input type="date" id="outDate" onchange="handleDateChange()">
+                </div>
+
+                <div class="duration-display">
+                  <i class="fa-solid fa-arrow-right-long"></i>
+                  <span id="durationBadge" class="badge">-- Days</span>
+                </div>
+
+                <div class="date-field">
+                  <span class="sub-label">Returning</span>
+                  <input type="date" id="inDate" onchange="handleDateChange()">
+                </div>
+              </div>
+            </div>
+
+            <div class="quick-actions">
+              <button type="button" class="chip" onclick="setWeekend('this')">This Weekend</button>
+              <button type="button" class="chip" onclick="setWeekend('next')">Next Weekend</button>
+            </div>
+          </div>
+
+          <div class="form-group select-wrapper">
+            <label>Outing Type</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-person-walking-luggage"></i>
+              <select id="outingType">
+                <option value="">Select Type</option>
+                <option>Weekend Outing</option>
+                <option>Festival Outing</option>
+                <option>Emergency</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="primary-btn" onclick="generatePreview()">
+            <i class="fa-solid fa-eye"></i> Preview PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="preview-section">
+      <div id="preview" class="preview"></div>
+
+      <div id="downloadWrapper" class="download-section">
+        <button id="downloadBtn" onclick="downloadPDF()">
+          <i class="fa-solid fa-download"></i> Download PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Full Fields Add Student Modal -->
+    <div id="addStudentOverlay" class="admin-overlay">
+      <div class="admin-card" style="max-height: 90vh; overflow-y: auto;">
+
+        <div class="admin-icon">👤</div>
+
+        <h2>Add New Student</h2>
+        <p class="subtitle">
+          Enter complete student details to create an official record.
+        </p>
+
+        <!-- Student Name -->
+        <div class="field-group">
+          <label>Student Full Name</label>
+          <input id="studentName" class="text-input" placeholder="Enter full name">
+        </div>
+
+        <!-- Student ID -->
+        <div class="field-group">
+          <label>Student ID</label>
+          <input id="studentId" class="text-input" placeholder="e.g. 24WU0103006">
+        </div>
+
+        <!-- Gender -->
+        <div class="field-group">
+          <label>Gender</label>
+          <select id="studentGender" class="text-input" style="width: 100%;">
+            <option value="">Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+
+        <!-- Program -->
+        <div class="field-group">
+          <label>Program</label>
+          <input id="studentProgram" class="text-input" placeholder="e.g. CSE (BIC)">
+        </div>
+
+        <!-- Batch -->
+        <div class="field-group">
+          <label>Batch</label>
+          <input id="studentBatch" class="text-input" placeholder="e.g. 2024-2028">
+        </div>
+
+        <!-- Father Name -->
+        <div class="field-group">
+          <label>Father's Name</label>
+          <input id="fatherName" class="text-input">
+        </div>
+
+        <!-- Father Contact -->
+        <div class="field-group">
+          <label>Father Email</label>
+          <input id="fatherEmail" class="text-input">
+        </div>
+
+        <div class="field-group">
+          <label>Father Phone</label>
+          <input id="fatherPhone" class="text-input">
+        </div>
+
+        <!-- Mother Contact -->
+        <div class="field-group">
+          <label>Mother Name</label>
+          <input id="motherName" class="text-input">
+        </div>
+
+        <div class="field-group">
+          <label>Mother Email</label>
+          <input id="motherEmail" class="text-input">
+        </div>
+
+        <div class="field-group">
+          <label>Mother Phone</label>
+          <input id="motherPhone" class="text-input">
+        </div>
+
+        <!-- Student Contact -->
+        <div class="field-group">
+          <label>Student Email</label>
+          <input id="studentEmail" class="text-input">
+        </div>
+
+        <div class="field-group">
+          <label>Student Phone</label>
+          <input id="studentPhone" class="text-input">
+        </div>
+
+        <!-- Signature -->
+        <div class="field-group">
+          <label>Signature Image URL</label>
+          <input id="studentSignature" class="text-input" placeholder="https://">
+        </div>
+
+        <!-- Authorization PIN -->
+        <div class="field-group">
+          <label>Student Authorization PIN</label>
+          <div class="otp-inputs">
+            <input maxlength="1" class="student-pin-box" inputmode="numeric">
+            <input maxlength="1" class="student-pin-box" inputmode="numeric">
+            <input maxlength="1" class="student-pin-box" inputmode="numeric">
+            <input maxlength="1" class="student-pin-box" inputmode="numeric">
+            <input maxlength="1" class="student-pin-box" inputmode="numeric">
+          </div>
+        </div>
+
+        <div id="studentError" class="error-box">
+          Please complete all required fields.
+        </div>
+
+        <button class="primary-btn" onclick="saveNewStudent()">
+          Save Student Record
+        </button>
+
+        <button class="secondary-btn" onclick="closeAddStudent()">
+          Cancel
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmationOverlay" class="admin-overlay">
+      <div class="admin-card" style="max-width: 400px; text-align: center;">
+        <div class="admin-icon" style="background: #fee2e2; color: #ef4444;">
+          <i class="fa-solid fa-trash-can"></i>
+        </div>
+        <h2 style="margin-top: 1rem;">Delete Student?</h2>
+        <p class="subtitle" id="deleteStudentNameDisplay">
+          Are you sure you want to remove this student? This action cannot be undone.
+        </p>
+
+        <div style="display: flex; gap: 10px; margin-top: 1.5rem; justify-content: center;">
+          <button class="secondary-btn" onclick="closeDeleteModal()">Cancel</button>
+          <button class="primary-btn" onclick="confirmDeleteStudent()"
+            style="background: #ef4444; border-color: #ef4444; color: white;">Delete Record</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal with WhatsApp Action -->
+    <div id="successOverlay" class="admin-overlay">
+      <div class="admin-card" style="max-width: 400px; text-align: center;">
+        <div class="admin-icon" style="background: #dcfce7; color: #16a34a;">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h2 style="margin-top: 1rem;">Student Recorded</h2>
+        <p class="subtitle" style="margin-bottom: 2rem;">
+          Student data has been stored successfully.
+        </p>
+
+        <button class="primary-btn" onclick="triggerLastAddedWhatsApp()"
+          style="background: #25D366; border-color: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 10px;">
+          <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i> Send via WhatsApp
+        </button>
+      </div>
+    </div>
+
+    <!-- Admin Auth Modal -->
+    <!-- Final Professional Admin Verification Modal -->
+    <div id="adminAuthModal" class="admin-overlay">
+      <div class="admin-card">
+
+        <div class="admin-icon">🔐</div>
+
+        <h2>Administrator Verification</h2>
+        <p class="subtitle">
+          Please complete the verification to access administrative controls.
+        </p>
+
+        <!-- Session ID OTP -->
+        <div class="field-group">
+          <label>Admin Session ID</label>
+          <div class="otp-inputs">
+            <input maxlength="1" class="otp-box" inputmode="numeric">
+            <input maxlength="1" class="otp-box" inputmode="numeric">
+            <input maxlength="1" class="otp-box" inputmode="numeric">
+            <input maxlength="1" class="otp-box" inputmode="numeric">
+            <input maxlength="1" class="otp-box" inputmode="numeric">
+          </div>
+        </div>
+
+        <!-- Mobile -->
+        <div class="field-group">
+          <label>Registered Mobile Number</label>
+          <input type="text" id="adminMobile" class="text-input" placeholder="Enter registered mobile number"
+            inputmode="numeric" />
+        </div>
+
+        <!-- Security Question -->
+        <div class="field-group">
+          <label>Security Question</label>
+          <div class="security-question">
+            What is your best friend's name?
+          </div>
+          <input type="password" id="adminAnswer" class="text-input" placeholder="Enter your answer" />
+        </div>
+
+        <!-- Error -->
+        <div id="adminError" class="error-box">
+          <i class="fa-solid fa-triangle-exclamation"></i> Verification failed. Please check details.
+        </div>
+
+        <!-- Actions -->
+        <button class="primary-btn" onclick="verifyAdminAccess()">
+          Verify & Continue
+        </button>
+
+        <button class="secondary-btn" onclick="closeAdminAuth()">
+          Cancel Request
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Pro Admin Dashboard Modal -->
+    <div id="adminDashboardModal" class="admin-overlay">
+      <div class="dashboard-card">
+
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+          <div class="brand">
+            <div class="logo-icon"><i class="fa-solid fa-shield-cat"></i></div>
+            <div>
+              <h3>Admin Portal</h3>
+              <p>System Administration</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button onclick="adminLogout()" class="logout-btn">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+            </button>
+            <button class="close-dashboard" onclick="closeAdminDashboard()">&times;</button>
+          </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard-stats">
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Total Students</span>
+              <h4 id="totalCount">0</h4>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fa-solid fa-database"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Database Status</span>
+              <h4>Active</h4>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="dashboard-toolbar">
+          <h4 class="section-title">Student Records</h4>
+          <button class="action-btn primary" onclick="openAddStudentModal()">
+            <i class="fa-solid fa-plus"></i> Add Student
+          </button>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>ID</th>
+                <th>Program</th>
+                <th>Sec. PIN</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentListBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Dashboard Footer -->
+        <div class="dashboard-footer">
+          <div class="footer-left">
+            <button onclick="resetDataFactory()" class="text-danger-btn">
+              <i class="fa-solid fa-rotate-left"></i> Factory Reset
+            </button>
+          </div>
+          <div class="footer-right">
+            <button onclick="exportDataJS()" class="action-btn success">
+              <i class="fa-solid fa-file-export"></i> Export Data.js
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+  <script src="pdf.js"></script>
+
+  <script>
+    // Handles the Duration Badge logic and Date validation
+    function handleDateChange() {
+      const outDate = document.getElementById('outDate');
+      const inDate = document.getElementById('inDate');
+      const badge = document.getElementById('durationBadge');
+
+      // Prevent selecting a return date before departure
+      if (outDate.value) {
+        inDate.min = outDate.value;
+      }
+
+      // Reset if dates are invalid (Return before Depart)
+      if (inDate.value && outDate.value && inDate.value < outDate.value) {
+        inDate.value = "";
+        badge.classList.remove('visible');
+        return;
+      }
+
+      // Calculate Duration
+      if (outDate.value && inDate.value) {
+        const start = new Date(outDate.value);
+        const end = new Date(inDate.value);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Inclusive
+
+        badge.textContent = `${diffDays} Days`;
+        badge.classList.add('visible');
+      } else {
+        badge.classList.remove('visible');
+      }
+    }
+
+    // Quick Weekend Selection Logic (Updated)
+    function setWeekend(which) {
+      const today = new Date();
+      const outDateInput = document.getElementById('outDate');
+      const inDateInput = document.getElementById('inDate');
+      const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+      let daysToFriday = 0;
+
+      // 1. DETERMINE "THIS WEEKEND" FRIDAY
+      if (dayOfWeek === 6) {
+        // Today is Saturday -> "This Weekend" started Yesterday (Friday)
+        daysToFriday = -1;
+      } else if (dayOfWeek === 0) {
+        // Today is Sunday -> "This Weekend" started Last Friday
+        daysToFriday = -2;
+      } else {
+        // Monday (1) through Friday (5) -> Upcoming Friday (or Today if Friday)
+        // Mon: 5-1=4, Fri: 5-5=0
+        daysToFriday = 5 - dayOfWeek;
+      }
+
+      // Set the target departure date
+      let targetFriday = new Date(today);
+      targetFriday.setDate(today.getDate() + daysToFriday);
+
+      // 2. ADJUST FOR "NEXT WEEKEND"
+      if (which === 'next') {
+        // Simply add 7 days to whatever we calculated as "This Weekend's" Friday
+        targetFriday.setDate(targetFriday.getDate() + 7);
+      }
+
+      // Helper to format YYYY-MM-DD
+      const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      // 3. SET THE INPUT VALUES
+      // Set Departure (Friday)
+      outDateInput.value = formatDate(targetFriday);
+
+      // Set Return (Sunday = Friday + 2 days)
+      const targetSunday = new Date(targetFriday);
+      targetSunday.setDate(targetFriday.getDate() + 2);
+      inDateInput.value = formatDate(targetSunday);
+
+      // Update UI Elements
+      handleDateChange();
+
+      // Auto-select type
+      const typeSelect = document.getElementById('outingType');
+      if (typeSelect) typeSelect.value = "Weekend Outing";
+    }
+  </script>
+
+</body>
+
+</html>
