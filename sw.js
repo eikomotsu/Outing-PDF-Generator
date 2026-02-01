@@ -1,4 +1,4 @@
-const CACHE_NAME = 'outing-app-v2';
+const CACHE_NAME = 'outing-app-v4';
 const ASSETS = [
     "./",
     "./index.html",
@@ -6,8 +6,8 @@ const ASSETS = [
     "./script.js",
     "./data.js",
     "./manifest.json",
-    "./icon-192.jpg",
-    "./icon-512.jpg"
+    "./icon-192.png",
+    "./icon-512.png"
 ];
 
 self.addEventListener("install", e => {

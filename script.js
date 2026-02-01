@@ -858,7 +858,7 @@ function sendLocalNotification(studentName) {
     try {
       new Notification("Student Added", {
         body: `${studentName} has been successfully registered.`,
-        icon: "icon-192.jpg",
+        icon: "icon-192.png",
         vibrate: [200, 100, 200]
       });
     } catch (e) {
