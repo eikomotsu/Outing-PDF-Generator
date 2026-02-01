@@ -799,6 +799,50 @@
       border: 1px solid #e2e8f0;
     }
 
+    /* --- Toast Notification --- */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+      width: max-content;
+    }
+
+    .toast {
+      background: #1f2937;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 50px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      font-size: 0.9rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toast.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.offline {
+      background: #ef4444;
+      /* Red */
+    }
+
+    .toast.online {
+      background: #10b981;
+      /* Green */
+    }
+
     .dashboard-header {
       background: #ffffff;
       color: #000000;
@@ -1618,6 +1662,10 @@
             </div>
           </div>
           <div class="header-actions">
+            <button onclick="requestNotificationPermission()" class="logout-btn"
+              style="background: #e0e7ff; color: #4338ca; margin-right: 8px;">
+              <i class="fa-solid fa-bell"></i> Notify
+            </button>
             <button onclick="adminLogout()" class="logout-btn">
               <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
             </button>
@@ -1784,6 +1832,8 @@
     }
   </script>
 
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
 </body>
 
 </html>

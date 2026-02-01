@@ -158,6 +158,9 @@ function saveNewStudent() {
     // Show success modal first
     openSuccessModal();
 
+    // Trigger Local Notification
+    sendLocalNotification(newStudent.name);
+
     // AUTO-SEND: Open WhatsApp after 1 second
     // Note: Some browsers might block this popup since it's delayed.
     // The modal button serves as a backup.
@@ -800,6 +803,68 @@ Authorization PIN: ${student.pin}
 function triggerWhatsApp(index) {
   const student = allStudents[index];
   sendStudentToWhatsApp(student);
+}
+
+// --- 7. PWA Features (Notifications & Connectivity) ---
+
+function showToast(message, type = 'default') {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <i class="fa-solid ${type === 'offline' ? 'fa-wifi-slash' : (type === 'online' ? 'fa-wifi' : 'fa-info-circle')}"></i>
+    <span>${message}</span>
+  `;
+
+  container.appendChild(toast);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.classList.add('active');
+  });
+
+  // Auto remove
+  setTimeout(() => {
+    toast.classList.remove('active');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Connectivity Listeners
+window.addEventListener('online', () => showToast("Back Online", "online"));
+window.addEventListener('offline', () => showToast("No Internet Connection", "offline"));
+
+// Notification Permission
+function requestNotificationPermission() {
+  if (!("Notification" in window)) {
+    console.log("This browser does not support desktop notification");
+    return;
+  }
+
+  if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        showToast("Notifications Enabled", "online");
+      }
+    });
+  }
+}
+
+// Trigger in saveNewStudent
+function sendLocalNotification(studentName) {
+  if (Notification.permission === "granted") {
+    try {
+      new Notification("Student Added", {
+        body: `${studentName} has been successfully registered.`,
+        icon: "icon-192.jpg",
+        vibrate: [200, 100, 200]
+      });
+    } catch (e) {
+      console.error("Notification Error:", e);
+    }
+  }
 }
 
 // --- PWA Service Worker Registration ---

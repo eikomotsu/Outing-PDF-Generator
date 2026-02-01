@@ -1,15 +1,43 @@
 {
     "name": "Outing Permission System",
+    "id": "outing-permission-system",
+    "iarc_rating_id": "",
+    "description": "A professional tool for generating official university outing permission PDFs with ease.",
+    "categories": [
+        "education",
+        "productivity",
+        "utilities"
+    ],
+    "prefer_related_applications": false,
+    "related_applications": [],
     "short_name": "Outing App",
+    "lang": "en-US",
+    "dir": "ltr",
+    "scope": "./",
+    "scope_extensions": [],
     "start_url": "./index.html",
+    "display_override": [
+        "tabbed",
+        "window-controls-overlay",
+        "standalone",
+        "minimal-ui"
+    ],
+    "tab_strip": {
+        "home_tab": {},
+        "new_tab_button": {
+            "url": "./index.html",
+            "visibility": "auto"
+        }
+    },
     "display": "standalone",
+    "orientation": "any",
     "background_color": "#0b0f14",
     "theme_color": "#2563eb",
     "icons": [
         {
-            "src": "icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png",
+            "src": "icon-192.jpg",
+            "sizes": "1024x1024",
+            "type": "image/jpeg",
             "purpose": "any maskable"
         },
         {
@@ -18,5 +46,80 @@
             "type": "image/png",
             "purpose": "any maskable"
         }
-    ]
+    ],
+    "screenshots": [
+        {
+            "src": "screenshot-desktop.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide"
+        },
+        {
+            "src": "screenshot-mobile.png",
+            "sizes": "360x720",
+            "type": "image/png",
+            "form_factor": "narrow"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "New Outing",
+            "url": "./index.html",
+            "icons": [
+                {
+                    "src": "icon-192.jpg",
+                    "sizes": "1024x1024",
+                    "type": "image/jpeg"
+                }
+            ]
+        }
+    ],
+    "file_handlers": [
+        {
+            "action": "./index.html",
+            "accept": {
+                "application/json": [
+                    ".json"
+                ]
+            }
+        }
+    ],
+    "launch_handler": {
+        "client_mode": "navigate-existing"
+    },
+    "protocol_handlers": [
+        {
+            "protocol": "web+outing",
+            "url": "./index.html?handler=%s"
+        }
+    ],
+    "share_target": {
+        "action": "./index.html",
+        "method": "GET",
+        "params": {
+            "title": "title",
+            "text": "text"
+        }
+    },
+    "widgets": [
+        {
+            "name": "New Request",
+            "description": "Create a new outing request",
+            "tag": "new-request",
+            "template": "widget-template.json",
+            "screenshots": [
+                {
+                    "src": "screenshot-mobile.png",
+                    "sizes": "360x720",
+                    "type": "image/png"
+                }
+            ]
+        }
+    ],
+    "edge_side_panel": {
+        "preferred_width": 375
+    },
+    "note_taking": {
+        "new_note_url": "./index.html"
+    }
 }
