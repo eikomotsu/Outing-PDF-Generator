@@ -2,7 +2,6 @@ const CACHE_NAME = 'outing-app-v4';
 const ASSETS = [
     "./",
     "./index.html",
-    "./style.css",
     "./script.js",
     "./data.js",
     "./manifest.json",
